@@ -5,14 +5,17 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import model.mail.MailSender;
+import model.mail.Mail;
 
 public class ApplicationAdapter
 {
     public static final String APPLICATIONS_FILES = "applications.csv";
     public static final String TEMPLATE_FILE = "template.txt";
 
-    public static void saveApplication(MailSender mailSender, String company, String contactPerson)
+    public static final String ATTACHMENTS = "attachments:";
+    public static final String BODY = "body:";
+
+    public static void saveApplication(Mail mailSender)
     {
         boolean exist = new File(APPLICATIONS_FILES).exists();
 
@@ -20,7 +23,7 @@ public class ApplicationAdapter
         {
             if ( exist )
                 output.newLine();
-            output.write(mailSender.saveMail(company, contactPerson));
+            output.write(mailSender.toString());
         }
         catch ( IOException e )
         {
@@ -34,7 +37,8 @@ public class ApplicationAdapter
         {
             if ( attachments != null && attachments.length > 0 )
             {
-                output.write("Attachments: ");
+                output.write(ATTACHMENTS);
+                output.newLine();
                 boolean first = true;
                 for ( File file : attachments )
                 {
@@ -45,6 +49,8 @@ public class ApplicationAdapter
                 }
                 output.newLine();
             }
+            output.write(BODY);
+            output.newLine();
             output.write(body);
         }
         catch ( IOException e )

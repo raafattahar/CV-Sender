@@ -21,10 +21,10 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 
 import adapter.ApplicationAdapter;
+import adapter.MailHelper;
 import adapter.PropertiesHelper;
 import model.PropertiesModelCache;
-import model.authentification.Credential;
-import model.mail.MailSender;
+import model.mail.Mail;
 import views.ProgressDialog;
 import views.menu.MailSenderMenuBar;
 import views.properties.authentification.AuthentificationPanel;
@@ -156,8 +156,6 @@ public class MailSenderView extends JFrame implements ActionListener
         if ( !modelCache.getCredential().isValid() )
             authentificationPanel.updateProperties();
 
-        Credential credential = modelCache.getCredential();
-
         ProgressDialog progressDialog = new ProgressDialog("Sending email")
         {
             @Override
@@ -167,10 +165,10 @@ public class MailSenderView extends JFrame implements ActionListener
                 {
                     ApplicationAdapter.saveTemplate(mailSenderCenterPanel.getBodyValue(), attachedFiles);
                     setProgressValue(0.2);
-                    MailSender mailSender = null;
+                    Mail mailSender = null;
                     try
                     {
-                        mailSender = new MailSender(credential, modelCache.getMailServer());
+                        mailSender = new Mail(modelCache.getCredential(), modelCache.getMailServer());
                         mailSender.setReceiver(mailSenderCenterPanel.getReceiverValue())//
                                 .setSubject(mailSenderCenterPanel.getSubjectValue())//
                                 .setBody(mailSenderCenterPanel.getBodyValue());
@@ -186,7 +184,7 @@ public class MailSenderView extends JFrame implements ActionListener
                     boolean success = false;
                     try
                     {
-                        success = mailSender.send(mailSenderCenterPanel.getContactPersonValue());
+                        success = MailHelper.send(mailSender);
                         setProgressValue(0.6);
                     }
                     catch ( MessagingException e1 )
@@ -196,8 +194,7 @@ public class MailSenderView extends JFrame implements ActionListener
                     }
                     if ( success )
                     {
-                        ApplicationAdapter.saveApplication(mailSender, mailSenderCenterPanel.getCompanyValue(),
-                                mailSenderCenterPanel.getContactPersonValue());
+                        ApplicationAdapter.saveApplication(mailSender);
                         setProgressValue(0.8);
                     }
                     setProgressValue(1);

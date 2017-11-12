@@ -1,8 +1,6 @@
-package model.mail;
+package adapter;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -23,80 +21,29 @@ import javax.mail.internet.MimeMultipart;
 
 import com.sun.mail.smtp.SMTPSendFailedException;
 
-import model.authentification.Credential;
+import model.mail.Mail;
 
-public class MailSender
+public class MailHelper
 {
     private static final String DOCTYPE_HTML_STRING = "<!doctype html";
     private static final String HTML_STRING = "<html";
-    private final SimpleDateFormat format = new SimpleDateFormat("dd.MM.YYYY");
 
-    private String sender;
-    private String receiver;
-    private String password;
-    private String subject;
-    private String body;
-    private List<File> attachments = new ArrayList<>();
+    private static boolean debug = false;
 
-    // default gmail
-    private String mailServer = "smtp.gmail.com";
-    private int port = 587;
-
-    private boolean debug = false;
-
-    public MailSender(String sender, String password, String mailServer, int port)
+    public static boolean send(Mail mail) throws AddressException, MessagingException
     {
-        if ( sender == null || sender.isEmpty() )
-            throw new IllegalArgumentException("Sender should not be empty !");
-        if ( password == null || password.isEmpty() )
-            throw new IllegalArgumentException("Password should not be empty !");
-        if ( mailServer == null || mailServer.isEmpty() )
-            throw new IllegalArgumentException("Mail server should not be empty !");
-        if ( port < 0 )
-            throw new IllegalArgumentException("Port should not be negative!");
-        this.sender = sender;
-        this.password = password;
-        this.mailServer = mailServer;
-        this.port = port;
-    }
+        String mailServer = mail.getMailServer();
+        int port = mail.getPort();
 
-    public MailSender(Credential credential, MailServer mailServer)
-    {
-        this(credential.getLogin(), credential.getPassword(), mailServer.getSmtp(), mailServer.getPort());
-    }
+        String sender = mail.getSender();
+        String password = mail.getPassword();
 
-    public MailSender setAttachements(List<File> attachments)
-    {
-        this.attachments = attachments;
-        return this;
-    }
+        String receiver = mail.getReceiver();
+        String subject = mail.getSubject();
+        String contactPerson = mail.getContactPerson();
+        String body = mail.getBody();
+        List<File> attachments = mail.getAttachments();
 
-    public MailSender setReceiver(String receiver)
-    {
-        if ( receiver == null || receiver.isEmpty() )
-            throw new NullPointerException("Receiver should not be empty !");
-        this.receiver = receiver;
-        return this;
-    }
-
-    public MailSender setSubject(String subject)
-    {
-        if ( subject == null || subject.isEmpty() )
-            throw new NullPointerException("Subject should not be empty !");
-        this.subject = subject;
-        return this;
-    }
-
-    public MailSender setBody(String body)
-    {
-        if ( body == null || body.isEmpty() )
-            throw new NullPointerException("Body should not be empty !");
-        this.body = body;
-        return this;
-    }
-
-    public boolean send(String contactPerson) throws AddressException, MessagingException
-    {
         if ( mailServer == null )
             throw new RuntimeException("Mail server should be set to send the email!");
         boolean success = false;
@@ -107,11 +54,8 @@ public class MailSender
             String protocol = "smtp";
 
             Properties props = new Properties(System.getProperties());
-            if ( mailServer != null )
-            {
-                props.put("mail." + protocol + ".port", String.valueOf(port)); //$NON-NLS-1$
-                props.put("mail." + protocol + ".host", mailServer); //$NON-NLS-1$
-            }
+            props.put("mail." + protocol + ".port", String.valueOf(port)); //$NON-NLS-1$
+            props.put("mail." + protocol + ".host", mailServer); //$NON-NLS-1$
 
             if ( sender != null && sender.length() == 0 )
                 sender = null;
@@ -225,21 +169,5 @@ public class MailSender
             System.out.println("... email was" + (success ? "" : " NOT") + " sent");
         }
         return success;
-    }
-
-    public String saveMail(String company, String contactPerson)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(company);
-        sb.append(";");
-        sb.append(subject);
-        sb.append(";");
-        sb.append(format.format(new Date()));
-        sb.append(";");
-        sb.append(receiver);
-        sb.append(";");
-        sb.append(contactPerson);
-        sb.append(";");
-        return sb.toString();
     }
 }

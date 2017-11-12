@@ -12,25 +12,11 @@ import javax.swing.JMenuItem;
 
 import model.PropertiesModelCache;
 import model.mail.MailServer;
+import model.mail.MailServer.SMTP;
 import views.properties.mail.MailServerPanel;
 
 public class MailServerMenu extends JMenu implements ActionListener
 {
-    private enum SMTP
-    {
-        Gmail("smtp.gmail.com"), //
-        Hotmail("smtp.live.com"), //
-        Outlook("smtp.live.com"), //
-        Gmx("mail.gmx.net");
-
-        private String smtp;
-
-        SMTP(String smtp)
-        {
-            this.smtp = smtp;
-        }
-    }
-
     private final static String EMPTY_SERVER = "Empty server";
     private final String SERVER = "Server: ";
 
@@ -58,11 +44,17 @@ public class MailServerMenu extends JMenu implements ActionListener
 
         addSeparator();
 
+        String modelCacheSmtp = modelCache.getMailServer().getSmtp();
+
         SMTP[] values = SMTP.values();
         for ( SMTP smtp : values )
         {
             JMenuItem item = new JCheckBoxMenuItem(smtp.name());
             item.addActionListener(this);
+            if ( smtp.getSmtp().equals(modelCacheSmtp) )
+                item.setSelected(true);
+            else if ( modelCacheSmtp == null && smtp == SMTP.getDefaultSmtp() )// default 
+                item.setSelected(true);
             add(item);
         }
     }
@@ -84,7 +76,7 @@ public class MailServerMenu extends JMenu implements ActionListener
                 {
                     String serverName = ((JMenuItem)source).getText();
                     SMTP smtp = SMTP.valueOf(serverName);
-                    modelCache.getMailServer().setSmtp(smtp.smtp);
+                    modelCache.getMailServer().setSmtp(smtp.getSmtp());
                     modelCache.getMailServer().setPort(587);
                     for ( int i = 0; i < getItemCount(); i++ )
                     {

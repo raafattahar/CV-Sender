@@ -2,6 +2,31 @@ package model.mail;
 
 public class MailServer
 {
+    public static enum SMTP
+    {
+        Gmail("smtp.gmail.com"), //
+        Hotmail("smtp.live.com"), //
+        Outlook("smtp.live.com"), //
+        Gmx("mail.gmx.net");
+
+        private String smtp;
+
+        SMTP(String smtp)
+        {
+            this.smtp = smtp;
+        }
+
+        public String getSmtp()
+        {
+            return smtp;
+        }
+
+        public static SMTP getDefaultSmtp()
+        {
+            return Gmail;
+        }
+    }
+
     private String smtp;
     private int port;
 
@@ -56,7 +81,7 @@ public class MailServer
 
     public static MailServer getGmailServer()
     {
-        return new MailServer("smtp.gmail.com", 587);
+        return new MailServer(SMTP.getDefaultSmtp().getSmtp(), 587);
     }
 
     public boolean isValid()

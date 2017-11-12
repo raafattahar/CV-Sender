@@ -47,6 +47,18 @@ public class Mail
         this(credential.getLogin(), credential.getPassword(), mailServer.getSmtp(), mailServer.getPort());
     }
 
+    public Mail setCompany(String company)
+    {
+        this.company = company;
+        return this;
+    }
+
+    public Mail setContactPerson(String contactPerson)
+    {
+        this.contactPerson = contactPerson;
+        return this;
+    }
+
     public Mail setAttachements(List<File> attachments)
     {
         this.attachments = attachments;

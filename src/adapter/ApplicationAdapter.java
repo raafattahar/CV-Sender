@@ -4,8 +4,12 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.List;
 
 import model.mail.Mail;
+import views.mail.MailSenderView;
 
 public class ApplicationAdapter
 {
@@ -56,6 +60,47 @@ public class ApplicationAdapter
         catch ( IOException e )
         {
             e.printStackTrace();
+        }
+    }
+
+    public static void loadTemplate() throws IOException
+    {
+        File file = new File(TEMPLATE_FILE);
+        if ( !file.exists() )
+            throw new IOException("Template file does not exist!");
+        List<String> allLines = Files.readAllLines(file.toPath(), StandardCharsets.ISO_8859_1);
+        if ( allLines != null && allLines.size() > 0 )
+        {
+            MailSenderView mailSenderView = MailSenderView.getInstance();
+            int line = 0;
+            if ( allLines.get(line).toLowerCase().startsWith(ATTACHMENTS) && allLines.size() > 1 )
+            {
+                line++;
+                String attachments = allLines.get(line);
+                if ( attachments != null && !attachments.isEmpty() )
+                {
+                    String[] attachmentsList = attachments.split(";");
+                    File[] files = new File[attachmentsList.length];
+                    for ( int i = 0; i < attachmentsList.length; i++ )
+                        files[i] = new File(attachmentsList[i]);
+                    mailSenderView.attachFiles(files);
+                    line++;
+                }
+            }
+
+            if ( allLines.size() > line && allLines.get(line).toLowerCase().startsWith(BODY) )
+            {
+                line++;
+                StringBuilder body = new StringBuilder();
+                for ( int i = line; i < allLines.size(); i++ )
+                {
+                    if ( body.length() > 0 )
+                        body.append("\n");
+                    body.append(allLines.get(i));
+                }
+                if ( body.length() > 0 )
+                    mailSenderView.getMailSenderCenterPanel().setBodyValue(body.toString());
+            }
         }
     }
 }

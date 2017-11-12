@@ -74,6 +74,7 @@ public class MailSenderView extends JFrame implements ActionListener
         JScrollPane scrollPanel = new JScrollPane();
         scrollPanel.setBorder(BorderFactory.createCompoundBorder(new EmptyBorder(10, 10, 10, 10), new EtchedBorder()));
         scrollPanel.setPreferredSize(new Dimension(800, 600));
+        scrollPanel.getVerticalScrollBar().setUnitIncrement(20);
         mailSenderCenterPanel = new MailSenderCenterPanel();
         scrollPanel.setViewportView(mailSenderCenterPanel);
         view.add(scrollPanel, BorderLayout.CENTER);
@@ -111,11 +112,6 @@ public class MailSenderView extends JFrame implements ActionListener
         mailSenderMenuBar.refresh();
     }
 
-    public AuthentificationPanel getAuthentificationPanel()
-    {
-        return authentificationPanel;
-    }
-
     public PropertiesModelCache getModelCache()
     {
         return modelCache;
@@ -124,6 +120,21 @@ public class MailSenderView extends JFrame implements ActionListener
     public MailSenderMenuBar getMailSenderMenuBar()
     {
         return mailSenderMenuBar;
+    }
+
+    public AuthentificationPanel getAuthentificationPanel()
+    {
+        return authentificationPanel;
+    }
+
+    public MailSenderCenterPanel getMailSenderCenterPanel()
+    {
+        return mailSenderCenterPanel;
+    }
+
+    public File[] getAttachments()
+    {
+        return attachedFiles;
     }
 
     @Override
@@ -140,7 +151,13 @@ public class MailSenderView extends JFrame implements ActionListener
         FileDialog fd = new FileDialog(this, "Attach files", FileDialog.LOAD);
         fd.setMultipleMode(true);
         fd.setVisible(true);
-        attachedFiles = fd.getFiles();
+        File[] files = fd.getFiles();
+        attachFiles(files);
+    }
+
+    public void attachFiles(File[] files)
+    {
+        attachedFiles = files;
         StringBuilder sb = new StringBuilder();
         for ( File file : attachedFiles )
         {
@@ -161,6 +178,7 @@ public class MailSenderView extends JFrame implements ActionListener
             @Override
             public void run()
             {
+                boolean success = false;
                 try
                 {
                     ApplicationAdapter.saveTemplate(mailSenderCenterPanel.getBodyValue(), attachedFiles);
@@ -169,8 +187,10 @@ public class MailSenderView extends JFrame implements ActionListener
                     try
                     {
                         mailSender = new Mail(modelCache.getCredential(), modelCache.getMailServer());
-                        mailSender.setReceiver(mailSenderCenterPanel.getReceiverValue())//
+                        mailSender.setCompany(mailSenderCenterPanel.getCompanyValue())//
+                                .setReceiver(mailSenderCenterPanel.getReceiverValue())//
                                 .setSubject(mailSenderCenterPanel.getSubjectValue())//
+                                .setContactPerson(mailSenderCenterPanel.getContactPersonValue())//
                                 .setBody(mailSenderCenterPanel.getBodyValue());
                         if ( attachedFiles != null )
                             mailSender.setAttachements(Arrays.asList(attachedFiles));
@@ -181,7 +201,6 @@ public class MailSenderView extends JFrame implements ActionListener
                         throw ex;
                     }
                     setProgressValue(0.4);
-                    boolean success = false;
                     try
                     {
                         success = MailHelper.send(mailSender);
@@ -201,8 +220,12 @@ public class MailSenderView extends JFrame implements ActionListener
                 }
                 catch ( Exception ex )
                 {
+                    if ( !success )
+                        JOptionPane.showMessageDialog(MailSenderView.this, "Fail to send E-mail: " + ex.getMessage());
                     ex.printStackTrace();
                 }
+                if ( success )
+                    JOptionPane.showMessageDialog(MailSenderView.this, "Email was send");
             }
         };
         progressDialog.startJob();

@@ -197,6 +197,11 @@ public class MailSenderCenterPanel extends JPanel
         return bodyValue.getText();
     }
 
+    public void setBodyValue(String body)
+    {
+        bodyValue.setText(body);
+    }
+
     public static void main(String[] args)
     {
         JFrame frame = new JFrame();

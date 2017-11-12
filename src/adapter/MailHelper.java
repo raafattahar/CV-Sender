@@ -92,7 +92,8 @@ public class MailHelper
             boolean sendAsHtml = false;
             if ( body != null )
             {
-                body.replaceAll("${CONTACT_PERSON}", contactPerson);
+                if ( contactPerson != null && contactPerson.length() > 0 )
+                    body = body.replace("${CONTACT_PERSON}", contactPerson);
                 String bodyTrimmedLoweCase = body.trim().toLowerCase();
                 sendAsHtml = (bodyTrimmedLoweCase.startsWith(DOCTYPE_HTML_STRING)
                         || bodyTrimmedLoweCase.startsWith(HTML_STRING));

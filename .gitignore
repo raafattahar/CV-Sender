@@ -1,0 +1,17 @@
+*~
+.classpath
+.project
+target
+.settings
+.DS_Store
+.faces-config.xml.jsfdia
+MANIFEST.MF
+*.iml
+RemoteSystemsTempFiles
+bin
+lib/other
+classes/
+src/experimental/*
+/applications.csv
+/applications.properties
+/template.txt
